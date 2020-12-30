@@ -6,40 +6,59 @@ import "./styles.css";
 
 function App() {
   
-  const [projects, setProjects] = useState([]);
+  const [repositories, setRepositories] = useState([]);
 
   useEffect(() => {
-    api.get('/projects').then(response => {
-      setProjects(response.data);
+    api.get('/repositories').then(response => {
+      setRepositories(response.data);
     });
   }, []);
   
   const [input, setInput] = useState('');
 
   async function handleAddRepository() {
-    const response  = await api.post('/projects', {
+    
+    // if (!`${input}`.trim().length) {
+    //   alert('Favor digitar um repositório.');
+    //   return;
+    // }
+    
+    const response  = await api.post('/repositories', {
       title: `${input}`,
-      ownder: "Silas de Araujo"
+      url: 'http:github.com/silasdearaujo',
+      techs: ['ReactJS']
     });
 
-    const project = response.data;
+    const repository = response.data;
 
-    setProjects([...projects, project]);
+    setRepositories([...repositories, repository]);
   }
 
   async function handleRemoveRepository(id) {
-    
+    const response  = await api.delete(`/repositories/${id}`, {
+      id: `${id}`      
+    });
+
+    const repository = response.data;
+
+    setRepositories(repositories.filter(repository => repository.id != id));
   }
   
   return (
     <div>
-      <input value={input} onInput={e => setInput(e.target.value)}/>
+      <input value={input} onChange={e => setInput(e.target.value)}/>
       <br/>
       <button onClick={handleAddRepository}>Adicionar</button>
+      <br/>
+      <br/>
       <ul data-testid="repository-list">
-        {projects.map(project => 
-        <li key={project.id}>{project.title}
-          <button onClick={() => handleRemoveRepository(1)}>
+        {repositories.map(repository => 
+        <li key={repository.id}>
+          <ul>
+            <li><a href={repository.url} targe="_blank">{repository.title}</a></li>
+            <li>Likes: {repository.likes}</li>
+          </ul>
+          <button onClick={() => handleRemoveRepository(`${repository.id}`)}>
             Remover
           </button>
         </li>)}
